@@ -27,12 +27,16 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -207,8 +211,7 @@ public class ProviderClient implements IClient {
 			
 			String json = gres.getSourceAsString();
 			System.out.println("ProviderClient.get-2 "+json);
-			JSONParser p = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
-			JSONObject jo = (JSONObject)p.parse(json);
+			JSONObject jo = toJSONObject(json);
 			result.setResultObject(jo);
 		
 		} catch (Exception e) {
@@ -231,21 +234,44 @@ public class ProviderClient implements IClient {
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#search(java.lang.String, java.lang.String)
 	 */
-	public IResult search(String query, String index) {
+	public IResult search(SearchRequest query, String index) {
 		IResult result = new ResultPojo();
-		// TODO Auto-generated method stub
+		SearchRequest req;
+		//SearchResponse searchResponse = client.
 		return result;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#listSearch(java.lang.String, java.lang.String)
 	 */
-	public IResult listSearch(String query, String index) {
+	public IResult listSearch(SearchRequest query, String index) {
 		IResult result = new ResultPojo();
-		// TODO Auto-generated method stub
+		try {
+			SearchResponse searchResponse = client.search(query);
+			SearchHits hits = searchResponse.getHits();
+			Iterator<SearchHit> itr = hits.iterator();
+			SearchHit hit;
+			String json;
+			List<JSONObject> vals = new ArrayList<JSONObject>();
+			result.setResultObject(vals);
+			while (itr.hasNext()) {
+				hit = itr.next();
+				json = hit.getSourceAsString();
+				vals.add(toJSONObject(json));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			environment.logError("ProviderClient.listSearch: "+e.getMessage(), e);
+			result.addErrorString(e.getMessage());
+		}
 		return result;
 	}
 
+	JSONObject toJSONObject(String json) throws Exception {
+		JSONParser p = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+		JSONObject jo = (JSONObject)p.parse(json);
+		return jo;
+	}
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#multiSearch(java.util.List, java.lang.String)
 	 */

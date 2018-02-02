@@ -6,6 +6,7 @@ package org.topicquests.es.api;
 import java.util.List;
 
 import org.topicquests.support.api.IResult;
+import org.elasticsearch.action.search.SearchRequest;
 
 import net.minidev.json.JSONObject;
 
@@ -89,7 +90,7 @@ public interface IClient {
 	 * @param index
 	 * @return can return <code>null</code>
 	 */
-	IResult search(String query, String index);
+	IResult search(SearchRequest query, String index);
 	
 	/**
 	 * Execute the given <code>query</code>. Returns a collection as <code>List<JSONObject>
@@ -97,7 +98,7 @@ public interface IClient {
 	 * @param index
 	 * @return can return an empty result; does not return <code>null</code>
 	 */
-	IResult listSearch(String  query, String index);
+	IResult listSearch(SearchRequest  query, String index);
 	/**
 	 * Perform a search on a list of query strings
 	 * @param query

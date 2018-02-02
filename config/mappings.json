@@ -11,16 +11,20 @@
                 "type": "string",
                 "store": true
             },
-            "label": {
-                "index": "analyzed",
-                "type": "string",
-                "store": true
-            },
-            "details": {
-                "index": "analyzed",
-                "type": "string",
-                "store": true
-            }
+            "lists": {
+                "properties": {
+		            "label": {
+		                "index": "analyzed",
+		                "type": "string",
+		                "store": true
+		            },
+		            "details": {
+		                "index": "analyzed",
+		                "type": "string",
+		                "store": true
+		            }
+		        }
+		    }
        }
    }
 }
