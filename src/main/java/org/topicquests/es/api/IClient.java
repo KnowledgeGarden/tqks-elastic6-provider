@@ -41,7 +41,7 @@ public interface IClient {
 	 * Rather, it is a change script.</p>
 	 * <p> IF <code>checkVersion</code> is <code>true</code>, <code>object</code>
 	 * <em>must include</code> the new version value</p>
-	 * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
+	 * "https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html"
 	 * @param id
 	 * @param index
 	 * @param object is a script, not a document

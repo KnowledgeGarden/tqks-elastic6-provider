@@ -12,17 +12,10 @@ import org.topicquests.support.util.ConfigurationHelper;
 import org.topicquests.support.util.LRUCache;
 import org.topicquests.support.util.TextFileHandler;
 
-import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -31,9 +24,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -64,13 +55,6 @@ public class ProviderClient implements IClient {
 
 	//https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-low-usage-initialization.html
 	private void setup() {
-		//Object obj = environment.getProperty("Clusters");
-		//List<List<String>>hx = (List<List<String>>)obj;
-		//int len = hx.size();
-		
-		//HttpHost hosts [] = new HttpHost[len];
-		//RestClient rc = null;
-		//TODO BigTime -- fix this
 		environment.logDebug("ProviderClient.setup-");
 		client = new RestHighLevelClient(
 		        RestClient.builder(
@@ -84,31 +68,33 @@ public class ProviderClient implements IClient {
 		List<List<String>>indexes = (List<List<String>>)environment.getProperties().get("IndexNames");
 		int len = indexes.size();
 		environment.logDebug("ProviderClient.createIndex- "+indexes);
-	//	List<String>indices = new ArrayList<String>();
 		String numShards = environment.getStringProperty("NumShards");
 		String numReplicas = environment.getStringProperty("NumDuplicates");
 		int nS = Integer.parseInt(numShards);
 		int nR = Integer.parseInt(numReplicas);
 		String mappx;
 		int foundCode = 0; //too == found, 404 == notfound
-//		JSONObject mappy = null;
+		JSONObject mappy = null;
 		String _INDEX;
 		for (int i=0;i<len;i++) {
 			_INDEX = indexes.get(i).get(0); // name
 			mappx = indexes.get(i).get(1);  // mapping file
-			mappx = getMappings(mappx);
+			
 			System.out.println("CreatingIndex "+_INDEX);
 			
 			try {
-				Response resp = client.getLowLevelClient().performRequest("GET", "/" + _INDEX, new HashMap<String, String>(), new BasicHeader("Accep", "application/json"));
-				System.out.println("CreatingIndex-1 "+resp.getStatusLine());
-				foundCode = resp.getStatusLine().getStatusCode();
+				mappy = getMappings(mappx);
+				try {
+					Response resp = client.getLowLevelClient().performRequest("GET", "/" + _INDEX, new HashMap<String, String>(), new BasicHeader("Accep", "application/json"));
+					System.out.println("CreatingIndex-1 "+resp.getStatusLine());
+					foundCode = resp.getStatusLine().getStatusCode();
+				} catch (Exception x) {
+					//seems to toss a bitch if the index is not found
+					foundCode = 404;
+				}
+				
 				if (foundCode == 404) {
-					//jr = client.execute(new CreateIndex.Builder(_INDEX).build());
-					createMapping(mappx, _INDEX, nS, nR);
-					//createSettings(_INDEX);
-					//if (jr.getErrorMessage() != null)
-					//	environment.logError("JestError "+jr.getErrorMessage(), null);
+					createMapping(mappy, _INDEX, nS, nR);
 				}
 			} catch (Exception e) {
 				environment.logError(e.getMessage(), e);
@@ -117,15 +103,17 @@ public class ProviderClient implements IClient {
 		}
 	}
 	//https://www.elastic.co/guide/en/elasticsearch/client/java-rest/6.x/java-rest-high-put-mapping.html
-	private void createMapping(String mapping, String index, int numShards, int numReplicas) {
+	private void createMapping(JSONObject mapping, String index, int numShards, int numReplicas) {
 		try {
 			environment.logDebug("ProviderClient.createMapping- "+index+" "+numShards+" "+" "+numReplicas+" "+mapping);
 			//CreateIndexRequest request = new CreateIndexRequest(index);
 			//request.settings(Settings.builder() 
 			JSONObject jo = new JSONObject();
-				    jo.put("index.number_of_shards", numShards);
-				    jo.put("index.number_of_replicas", numReplicas);
-			
+			JSONObject s = new JSONObject();
+			s.put("index.number_of_shards", numShards);
+			s.put("index.number_of_replicas", numReplicas);
+			jo.put("settings", s);
+			jo.put("mappings", mapping);
 			System.out.println("ProviderClient.createMapping "+jo.toJSONString());
 			StringEntity entity = new StringEntity(jo.toJSONString(), ContentType.APPLICATION_JSON);
 			client.getLowLevelClient().performRequest("PUT", "/" + index, new HashMap<String, String>(), entity);
@@ -137,14 +125,15 @@ public class ProviderClient implements IClient {
 		}
 	}
 	
-	private String getMappings(String fileName) {
+	private JSONObject getMappings(String fileName) throws Exception {
 		TextFileHandler handler = new TextFileHandler();
 		String mappings = handler.readFile(ConfigurationHelper.findPath(fileName));		
-		return mappings;
+		JSONParser p = new JSONParser(JSONParser.MODE_JSON_SIMPLE);
+		return (JSONObject)p.parse(mappings);
 	}
 	
 	/* (non-Javadoc)
-	 * https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-high-document-index.html
+	 * "https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-high-document-index.html"
 	 * @see org.topicquests.es.api.IClient#put(java.lang.String, java.lang.String, net.minidev.json.JSONObject)
 	 */
 	public IResult put(String id, String index, JSONObject node) {

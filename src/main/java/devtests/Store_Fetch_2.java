@@ -35,18 +35,36 @@ public class Store_Fetch_2 {
 		jo.put("language", LANG);
 		List<String> labels = new ArrayList<String>();
 		labels.add(LAB);
-		labels.add(LAB2);
+		labels.add("Funky label");
+		//labels.add(LAB2);
 		jo.put("label", labels);
-		jo.put("details", DET);
+		labels = new ArrayList<String>();
+		labels.add(DET);
+		jo.put("details", labels);
 		IResult r = provider.put(ID, INDEX, jo);
-		
-		
 		System.out.println("Foo "+r.getErrorString());
+		String ID2 = Long.toString(System.currentTimeMillis());
+		labels = new ArrayList<String>();
+		labels.add(LAB2);
+		jo = new JSONObject();
+		jo.put("lox", ID2);
+		
+		jo.put("language", LANG);
+		jo.put("label", labels);
+		jo.put("details", "");
+		r = provider.put(ID2, INDEX, jo);
+		
+		System.out.println("Foo2 "+r.getErrorString());
 		r = provider.get(ID, INDEX);
 		System.out.println("Bar "+r.getErrorString()+" | "+r.getResultObject());
+		r = provider.get(ID2, INDEX);
+		System.out.println("Bar2 "+r.getErrorString()+" | "+r.getResultObject());
+		
 		environment.shutDown();
 		System.exit(0);
 	}
-//Bar  | {"lox":"1517602840935","language":"en","details":"For all good men to do something nice for their families.","label":["Now is a good time!","So what?"]}
+/////Bar  | {"lox":"1517602840935","language":"en","details":"For all good men to do something nice for their families.","label":["Now is a good time!","So what?"]}
+//Bar  | {"lox":"1517765097681","language":"en","details":["For all good men to do something nice for their families."],"label":["Now is a good time!"]}
+//Bar2  | {"lox":"1517765099733","language":"en","details":"","label":["So what?"]}
 
 }

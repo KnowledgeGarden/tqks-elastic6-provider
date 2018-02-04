@@ -47,9 +47,9 @@ public class QueryDSL implements IQueryDSL {
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IQueryDSL#getTextQueryString(java.lang.String, int, int, java.lang.String[])
 	 */
-	public SearchRequest getTextQueryString(String textQuery, int start, int count, String[] indices, String... fields) {
+	public SearchRequest getTextQueryString(String textQuery, int start, int count, String[] indices, String field) {
 		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-		searchSourceBuilder.query(QueryBuilders.multiMatchQuery(textQuery, fields));
+		searchSourceBuilder.query(QueryBuilders.matchPhraseQuery(field, textQuery));
 		searchSourceBuilder.from(start);
 		if (count > -1)
 			searchSourceBuilder.size(count);
