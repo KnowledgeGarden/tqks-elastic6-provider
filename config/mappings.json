@@ -2,28 +2,28 @@
     "core": {
         "properties": {
             "lox": {
-                "index": "not_analyzed",
-                "type": "string",
+                "index": false,
+                "type": "text",
                 "store": true
             },
             "label": {
             	"lists": {
             		"properties": {
 	            		"en": {
-			                "index": "analyzed",
-			                "type": "string",
+			                "index": true,
+			                "type": "text",
 			                "analyzer": "english",
 			                "store": true
 				        },
 	            		"fr": {
-			                "index": "analyzed",
-			                "type": "string",
+			                "index": true,
+			                "type": "text",
 			                "analyzer": "french",
 			                "store": true
 				        },
 				        "de": {
-			                "index": "analyzed",
-			                "type": "string",
+			                "index": true,
+			                "type": "text",
 			                "analyzer": "german",
 			                "store": true
 					     }		         
@@ -34,20 +34,20 @@
             "details": {
         		"properties": {
             		"en": {
-		                "index": "analyzed",
-		                "type": "string",
+		                "index": true,
+		                "type": "text",
 		                "analyzer": "english",
 		                "store": true
 			         },
 			         "fr": {
-		                "index": "analyzed",
-		                "type": "string",
+		                "index": true,
+		                "type": "text",
 		                "analyzer": "french",
 		                "store": true
 				     },
 				     "de": {
-		                "index": "analyzed",
-		                "type": "string",
+		                "index": true,
+		                "type": "text",
 		                "analyzer": "german",
 		                "store": true
 				     }		         
