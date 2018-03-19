@@ -6,25 +6,54 @@
                 "type": "string",
                 "store": true
             },
-            "language": {
-             	"index": "not_analyzed",
-                "type": "string",
-                "store": true
+            "label": {
+            	"lists": {
+            		"properties": {
+	            		"en": {
+			                "index": "analyzed",
+			                "type": "string",
+			                "analyzer": "english",
+			                "store": true
+				        },
+	            		"fr": {
+			                "index": "analyzed",
+			                "type": "string",
+			                "analyzer": "french",
+			                "store": true
+				        },
+				        "de": {
+			                "index": "analyzed",
+			                "type": "string",
+			                "analyzer": "german",
+			                "store": true
+					     }		         
+				        
+            		}
+            	}
             },
-            "lists": {
-                "properties": {
-		            "label": {
+            "details": {
+        		"properties": {
+            		"en": {
 		                "index": "analyzed",
 		                "type": "string",
+		                "analyzer": "english",
 		                "store": true
-		            },
-		            "details": {
+			         },
+			         "fr": {
 		                "index": "analyzed",
 		                "type": "string",
+		                "analyzer": "french",
 		                "store": true
-		            }
-		        }
-		    }
+				     },
+				     "de": {
+		                "index": "analyzed",
+		                "type": "string",
+		                "analyzer": "german",
+		                "store": true
+				     }		         
+				     		         
+        		}
+           }    	
        }
    }
 }

@@ -137,6 +137,7 @@ public class ProviderClient implements IClient {
 	 * @see org.topicquests.es.api.IClient#put(java.lang.String, java.lang.String, net.minidev.json.JSONObject)
 	 */
 	public IResult put(String id, String index, JSONObject node) {
+environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString());
 		IResult result = new ResultPojo();
 		try {
 			IndexRequest request = new IndexRequest(index, _TYPE, id);
