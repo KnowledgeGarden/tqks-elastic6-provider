@@ -57,6 +57,7 @@ public class FirstQueryTest {
                 
     IResult r = provider.put(ID, INDEX, jo);
     System.out.println("Foo "+r.getErrorString());
+    
     String ID2 = Long.toString(System.currentTimeMillis());
     labels = new ArrayList<String>();
     labels.add(LAB2);
@@ -73,7 +74,7 @@ public class FirstQueryTest {
     String [] indices = new String [1];
     indices[0]=INDEX;
     String [] fields = new String[2];
-    fields[0]="lox";
+    fields[0]="labels.en";
     fields[1]="details.en";
 
     r = textQueryUtil.queryText(Q1, 0, 5, INDEX, indices, fields);
