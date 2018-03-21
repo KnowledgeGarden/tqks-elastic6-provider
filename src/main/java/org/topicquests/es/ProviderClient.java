@@ -16,12 +16,17 @@ import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -156,36 +161,70 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	 * @see org.topicquests.es.api.IClient#updateFullNode(java.lang.String, java.lang.String, net.minidev.json.JSONObject, boolean)
 	 */
 	public IResult updateFullNode(String id, String index, JSONObject object, boolean checkVersion) {
-		IResult result = new ResultPojo();
-		// TODO Auto-generated method stub
-		return result;
+          IResult result = new ResultPojo();
+          try {
+            UpdateRequest request = new UpdateRequest(index, _TYPE, id)
+                .doc(object.toJSONString(), XContentType.JSON);
+            UpdateResponse updateResponse = client.update(request);
+            result.setResultObject(Integer.toString(updateResponse.status().getStatus()));
+          } catch (Exception e) {
+            e.printStackTrace();
+            environment.logError("ProviderClient.put: "+e.getMessage(), e);
+            result.addErrorString(e.getMessage());
+          }
+          return result;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#partialUpdateNode(java.lang.String, java.lang.String, net.minidev.json.JSONObject)
 	 */
 	public IResult partialUpdateNode(String id, String index, JSONObject object) {
-		IResult result = new ResultPojo();
-		// TODO Auto-generated method stub
-		return result;
+          IResult result = new ResultPojo();
+          try {
+            UpdateRequest request = new UpdateRequest(index, _TYPE, id)
+                .doc(object.toJSONString(), XContentType.JSON);
+            UpdateResponse updateResponse = client.update(request);
+            result.setResultObject(Integer.toString(updateResponse.status().getStatus()));
+          } catch (Exception e) {
+            e.printStackTrace();
+            environment.logError("ProviderClient.put: "+e.getMessage(), e);
+            result.addErrorString(e.getMessage());
+          }
+          return result;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#remove(java.lang.String, java.lang.String)
 	 */
 	public IResult remove(String id, String index) {
-		IResult result = new ResultPojo();
-		// TODO Auto-generated method stub
-		return result;
+          IResult result = new ResultPojo();
+          try {
+            DeleteRequest request = new DeleteRequest(index, _TYPE, id);
+            DeleteResponse response = client.delete(request);
+            result.setResultObject(Integer.toString(response.status().getStatus()));
+          } catch (Exception e) {
+            e.printStackTrace();
+            environment.logError("ProviderClient.delete: " + e.getMessage(), e);
+            result.addErrorString(e.getMessage());
+          }
+          return result;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#exists(java.lang.String, java.lang.String)
 	 */
 	public IResult exists(String id, String index) {
-		IResult result = new ResultPojo();
-		// TODO Auto-generated method stub
-		return result;
+          IResult result = new ResultPojo();
+          try {
+            GetRequest request = new GetRequest(index, _TYPE, id);
+            GetResponse response = client.get(request);
+            result.setResultObject(Boolean.toString(response.isExists()));
+          } catch (Exception e) {
+            e.printStackTrace();
+            environment.logError("ProviderClient.exists: " + e.getMessage(), e);
+            result.addErrorString(e.getMessage());
+          }
+          return result;
 	}
 		
 	/* (non-Javadoc)
@@ -225,10 +264,27 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	 * @see org.topicquests.es.api.IClient#search(java.lang.String, java.lang.String)
 	 */
 	public IResult search(SearchRequest query, String index) {
-		IResult result = new ResultPojo();
-		SearchRequest req;
-		//SearchResponse searchResponse = client.
-		return result;
+          IResult result = new ResultPojo();
+          try {
+            SearchResponse searchResponse = client.search(query);
+            SearchHits hits = searchResponse.getHits();
+            Iterator<SearchHit> itr = hits.iterator();
+            SearchHit hit;
+            String json;
+            List<JSONObject> vals = new ArrayList<JSONObject>();
+
+            result.setResultObject(vals);
+            while (itr.hasNext()) {
+              hit = itr.next();
+              json = hit.getSourceAsString();
+              vals.add(toJSONObject(json));
+            }
+          } catch (Exception e) {
+            e.printStackTrace();
+            environment.logError("ProviderClient.listSearch: "+e.getMessage(), e);
+            result.addErrorString(e.getMessage());
+          }
+          return result;
 	}
 
 	/* (non-Javadoc)

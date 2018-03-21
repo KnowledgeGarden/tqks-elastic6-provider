@@ -10,14 +10,14 @@ import java.util.*;
 import net.minidev.json.JSONObject;
 
 /**
- * @author jackpark
  *
  */
-public class Store_Fetch_2 {
+public class Exists {
 	private ProviderEnvironment environment;
 	private static final String
 		INDEX = "topics", //see /config/provider-config.xml
 		ID = Long.toString(System.currentTimeMillis()),
+                BAD_ID = "foo",
 		LANG = "en",
 		LAB = "Now is a good time!",
 		LAB2 = "So what?",
@@ -26,7 +26,7 @@ public class Store_Fetch_2 {
 	/**
 	 * 
 	 */
-	public Store_Fetch_2() {
+	public Exists() {
 		environment = new ProviderEnvironment();
 		IClient provider = environment.getProvider();
 		JSONObject jo = new JSONObject();
@@ -37,7 +37,7 @@ public class Store_Fetch_2 {
 		List<String> labels = new ArrayList<String>();
 		labels.add(LAB);
 		labels.add("Funky label");
-		labels.add(LAB2);
+		//labels.add(LAB2);
                 JSONObject jo_label = new JSONObject();
 		jo_label.put(LANG, labels);
                 
@@ -65,13 +65,14 @@ public class Store_Fetch_2 {
 		r = provider.put(ID2, INDEX, jo);
 		
 		System.out.println("Foo2 "+r.getErrorString());
-		r = provider.get(ID, INDEX);
-		System.out.println("Bar "+r.getErrorString()+" | "+r.getResultObject());
-		r = provider.get(ID2, INDEX);
-		System.out.println("Bar2 "+r.getErrorString()+" | "+r.getResultObject());
-		
+		r = provider.exists(ID, INDEX);
+		System.out.println("Exists Results: " + r.getErrorString() + " | " + r.getResultObject());
+		r = provider.exists(ID2, INDEX);
+		System.out.println("Exists Results "  + r.getErrorString() + " | " + r.getResultObject());
+		r = provider.exists(BAD_ID, INDEX);
+		System.out.println("Exists Results "  + r.getErrorString() + " | " + r.getResultObject());
+
 		environment.shutDown();
-		System.exit(0);
 	}
 /////Bar  | {"lox":"1517602840935","language":"en","details":"For all good men to do something nice for their families.","label":["Now is a good time!","So what?"]}
 //Bar  | {"lox":"1517765097681","language":"en","details":["For all good men to do something nice for their families."],"label":["Now is a good time!"]}
