@@ -34,16 +34,19 @@ public class FirstQueryTest {
 		String [] indices = new String [1];
 		indices[0]=INDEX;
 		String [] fields = new String[2];
-		fields[0]="label";
-		fields[1]="details";
+		fields[0]="label.en";
+		fields[1]="details.en";
 		IResult r = textQueryUtil.queryText(Q1, 0, 5, INDEX, indices, fields);
 		System.out.println("AAA "+r.getErrorString()+" | "+r.getResultObject());
+//AAA  | [{"lox":"1521559057491","label":[{"en":"Now is a good time!"},{"en":"So what?"}]}]
+
+		
 		r = textQueryUtil.queryText(Q2, 0, 5, INDEX, indices, fields);
 		System.out.println("BBB "+r.getErrorString()+" | "+r.getResultObject());
-		r = textQueryUtil.queryText(Q3, 0, 5, INDEX, indices, fields);
-		System.out.println("CCC "+r.getErrorString()+" | "+r.getResultObject());
-		r = textQueryUtil.queryText(Q4, 0, 5, INDEX, indices, fields);
-		System.out.println("DDD "+r.getErrorString()+" | "+r.getResultObject());
+		//r = textQueryUtil.queryText(Q3, 0, 5, INDEX, indices, fields);
+		//System.out.println("CCC "+r.getErrorString()+" | "+r.getResultObject());
+		//r = textQueryUtil.queryText(Q4, 0, 5, INDEX, indices, fields);
+		//System.out.println("DDD "+r.getErrorString()+" | "+r.getResultObject());
 		environment.shutDown();
 		System.exit(0);
 	}

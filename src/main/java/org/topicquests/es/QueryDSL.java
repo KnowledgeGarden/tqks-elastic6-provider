@@ -57,6 +57,17 @@ public class QueryDSL implements IQueryDSL {
 		return new SearchRequest(indices, searchSourceBuilder);
 	}
 
+	public SearchRequest getTextQueryString(String textQuery, int start, int count, String[] indices, String[] fields) {
+		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+		
+		searchSourceBuilder.query(QueryBuilders.multiMatchQuery(textQuery, fields));
+		searchSourceBuilder.from(start);
+		if (count > -1)
+			searchSourceBuilder.size(count);
+		System.out.println("QueryDSL.getTextQueryString "+searchSourceBuilder.toString());
+		return new SearchRequest(indices, searchSourceBuilder);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IQueryDSL#getFuzzyQueryString(java.lang.String, int, int, java.lang.String[])
 	 * /

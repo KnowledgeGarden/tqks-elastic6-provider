@@ -47,18 +47,13 @@ public class TextQueryUtil {
 		Set<JSONObject> objects = new HashSet<JSONObject>();
 		result.setResultObject(objects);
 		IResult r;
-		SearchRequest sr;
-		int len = fields.length;
-		for (int i=0; i< len; i++) {
-			sr = dsl.getTextQueryString(query, start, count, indices, fields[i]);
-			r = provider.listSearch(sr, index);
-			if (r.hasError())
-				result.addErrorString(r.getErrorString());
-			if (r.getResultObject() != null)
-				objects.addAll((List<JSONObject>)r.getResultObject());
-		}
-		
-		
+		SearchRequest sr;		
+		sr = dsl.getTextQueryString(query, start, count, indices, fields);
+		r = provider.listSearch(sr, index);
+		if (r.hasError())
+			result.addErrorString(r.getErrorString());
+		if (r.getResultObject() != null)
+			objects.addAll((List<JSONObject>)r.getResultObject());				
 		return result;
 	}
 

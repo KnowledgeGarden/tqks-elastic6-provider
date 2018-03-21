@@ -32,26 +32,31 @@ public class Store_Fetch_2 {
 		JSONObject jo = new JSONObject();
 		// got keys, see /config/mappings.json
 		jo.put("lox", ID);
-		jo.put("language", LANG);
-		List<String> labels = new ArrayList<String>();
-		labels.add(LAB);
-		labels.add("Funky label");
+		List<JSONObject> labels = new ArrayList<JSONObject>();
+		JSONObject ll = new JSONObject();
+		ll.put("en", LAB);
+		labels.add(ll);
+		ll = new JSONObject();
+		ll.put("en", LAB2);
+		labels.add(ll);
+		
 		//labels.add(LAB2);
 		jo.put("label", labels);
-		labels = new ArrayList<String>();
-		labels.add(DET);
-		jo.put("details", labels);
+//		labels = new ArrayList<String>();
+//		labels.add(DET);
+//		jo.put("details", labels);
+		environment.logDebug("AA "+jo.toJSONString());
 		IResult r = provider.put(ID, INDEX, jo);
 		System.out.println("Foo "+r.getErrorString());
 		String ID2 = Long.toString(System.currentTimeMillis());
-		labels = new ArrayList<String>();
-		labels.add(LAB2);
+		labels = new ArrayList<JSONObject>();
+		ll = new JSONObject();
+		ll.put("en", "Funky label");
+		labels.add(ll);
 		jo = new JSONObject();
 		jo.put("lox", ID2);
 		
-		jo.put("language", LANG);
 		jo.put("label", labels);
-		jo.put("details", "");
 		r = provider.put(ID2, INDEX, jo);
 		
 		System.out.println("Foo2 "+r.getErrorString());
