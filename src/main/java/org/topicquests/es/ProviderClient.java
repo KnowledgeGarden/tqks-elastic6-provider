@@ -55,7 +55,6 @@ public class ProviderClient implements IClient {
 		objectCache = new LRUCache(1024);
 		environment.logDebug("ProviderClient-");
 		setup();
-		System.out.println("ProviderClient "+client);
 	}
 
 	//https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-low-usage-initialization.html
@@ -85,13 +84,10 @@ public class ProviderClient implements IClient {
 			_INDEX = indexes.get(i).get(0); // name
 			mappx = indexes.get(i).get(1);  // mapping file
 			
-			System.out.println("CreatingIndex "+_INDEX);
-			
 			try {
 				mappy = getMappings(mappx);
 				try {
 					Response resp = client.getLowLevelClient().performRequest("GET", "/" + _INDEX, new HashMap<String, String>(), new BasicHeader("Accep", "application/json"));
-					System.out.println("CreatingIndex-1 "+resp.getStatusLine());
 					foundCode = resp.getStatusLine().getStatusCode();
 				} catch (Exception x) {
 					//seems to toss a bitch if the index is not found
@@ -119,12 +115,10 @@ public class ProviderClient implements IClient {
 			s.put("index.number_of_replicas", numReplicas);
 			jo.put("settings", s);
 			jo.put("mappings", mapping);
-			System.out.println("ProviderClient.createMapping "+jo.toJSONString());
 			StringEntity entity = new StringEntity(jo.toJSONString(), ContentType.APPLICATION_JSON);
 			client.getLowLevelClient().performRequest("PUT", "/" + index, new HashMap<String, String>(), entity);
 			environment.logDebug("ProviderClient.createMapping+");
 		} catch (Exception e) {
-			System.out.println("Ouch!");
 			environment.logError(e.getMessage(), e);
 			e.printStackTrace();			
 		}
@@ -233,15 +227,14 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	public IResult get(String id, String index) {
 		IResult result = new ResultPojo();
 		try {
-			System.out.println("ProviderClient.get- "+id);
 			GetRequest greq = new GetRequest(index, _TYPE, id);
-			System.out.println("ProviderClient.get-1 "+id);
 			GetResponse gres = client.get(greq, new BasicHeader("Accep", "application/json"));
 			
 			String json = gres.getSourceAsString();
-			System.out.println("ProviderClient.get-2 "+json);
-			JSONObject jo = toJSONObject(json);
-			result.setResultObject(jo);
+                        if (json != null) {
+                          JSONObject jo = toJSONObject(json);
+                          result.setResultObject(jo);
+                        }
 		
 		} catch (Exception e) {
 			e.printStackTrace();
