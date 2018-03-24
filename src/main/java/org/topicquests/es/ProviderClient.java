@@ -23,6 +23,8 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -332,10 +334,22 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#refresh()
 	 */
-	public IResult refresh() {
-		IResult result = new ResultPojo();
-		// TODO Auto-generated method stub
-		return result;
+	public IResult refresh(String index) {
+          IResult result = new ResultPojo();
+
+          try {
+            Response resp = client.getLowLevelClient().performRequest("POST", "/" + index + "/_refresh",
+                                                                      new HashMap<String, String>(),
+                                                                      new BasicHeader("Accep", "application/json"));
+            int foundCode = resp.getStatusLine().getStatusCode();
+            result.setResultObject(Integer.toString(foundCode));
+          } catch (Exception e) {
+            e.printStackTrace();
+            environment.logError("ProviderClient.exists: " + e.getMessage(), e);
+            result.addErrorString(e.getMessage());
+          }
+
+          return result;
 	}
 
 	/* (non-Javadoc)

@@ -40,9 +40,8 @@ public class FirstQueryTest {
     jo.put("lox", ID);
 
     List<String> labels = new ArrayList<String>();
-    labels.add(LAB);
     labels.add("Funky label");
-    labels.add(LAB2);
+    labels.add(LAB);
     JSONObject jo_label = new JSONObject();
     jo_label.put(LANG, labels);
                 
@@ -61,6 +60,9 @@ public class FirstQueryTest {
     String ID2 = Long.toString(System.currentTimeMillis());
     labels = new ArrayList<String>();
     labels.add(LAB2);
+    jo_label = new JSONObject();
+    jo_label.put(LANG, labels);
+
     jo = new JSONObject();
     jo.put("lox", ID2);
 		
@@ -69,24 +71,34 @@ public class FirstQueryTest {
     jo.put("details", jo_detail);
     System.out.println("JO #2" + jo);
     r = provider.put(ID2, INDEX, jo);
+
+    System.out.println("--- calling refresh...");
+    r = provider.refresh(INDEX);
+    System.out.println("--- DONE calling refresh...");
     
     textQueryUtil = environment.getTextQueryUtil();
     String [] indices = new String [1];
     indices[0]=INDEX;
     String [] fields = new String[2];
-    fields[0]="labels.en";
+    fields[0]="label.en";
     fields[1]="details.en";
 
     r = textQueryUtil.queryText(Q1, 0, 5, INDEX, indices, fields);
     System.out.println("AAA "+r.getErrorString()+" | "+r.getResultObject());
+
     r = textQueryUtil.queryText(Q2, 0, 5, INDEX, indices, fields);
     System.out.println("BBB "+r.getErrorString()+" | "+r.getResultObject());
+
     r = textQueryUtil.queryText(Q3, 0, 5, INDEX, indices, fields);
     System.out.println("CCC "+r.getErrorString()+" | "+r.getResultObject());
+
     r = textQueryUtil.queryText(Q4, 0, 5, INDEX, indices, fields);
     System.out.println("DDD "+r.getErrorString()+" | "+r.getResultObject());
+
+    fields[0] = "lox";
     r = textQueryUtil.queryText(ID, 0, 5, INDEX, indices, fields);
-    System.out.println("DDD "+r.getErrorString()+" | "+r.getResultObject());
+    System.out.println("EEE "+r.getErrorString()+" | "+r.getResultObject());
+
     environment.shutDown();
   }
 }

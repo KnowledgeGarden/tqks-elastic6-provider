@@ -115,7 +115,12 @@ public interface IClient {
 	 */
 	IResult count(String query, String index);
 	
-	IResult refresh();
+	/**
+	 * Refresh the index.
+	 * @param index
+	 * @return
+	 */
+	IResult refresh(String index);
 	
 	void clearCache();
 	
