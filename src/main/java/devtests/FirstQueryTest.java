@@ -113,6 +113,10 @@ public class FirstQueryTest {
     r = textQueryUtil.queryText(Q4, 0, 5, INDEX, indices, fields);
     System.out.println("DDD "+r.getErrorString()+" | "+r.getResultObject());
 
+    //
+    // To query labels from any language, use the wildcard:
+    // fields[0]="label.*";
+    //
     fields[0]="label.fr";
     r = textQueryUtil.queryText(Q5, 0, 5, INDEX, indices, fields);
     System.out.println("EEE "+r.getErrorString()+" | "+r.getResultObject());
