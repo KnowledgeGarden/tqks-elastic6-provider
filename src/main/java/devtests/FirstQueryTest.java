@@ -21,14 +21,17 @@ public class FirstQueryTest {
   private final String
   INDEX = "topics",
     ID = Long.toString(System.currentTimeMillis()),
-    LANG = "en",
+    EN_LANG = "en",
+    FR_LANG = "fr",
     LAB = "Now is a good time!",
+    FR_LAB = "C'est un bon moment",
     LAB2 = "So what?",
     DET	= "For all good men to do something nice for their families.",
     Q1 = "good time",
     Q2 = "So what?",
     Q3 = "good men",
-    Q4 = "bogus";
+    Q4 = "bogus",
+    Q5 = "un bon moment";
 	
   public FirstQueryTest() {
     System.out.println("--- First Query Test ---");
@@ -39,18 +42,18 @@ public class FirstQueryTest {
     // got keys, see /config/mappings.json
     jo.put("lox", ID);
 
-    List<String> labels = new ArrayList<String>();
-    labels.add("Funky label");
-    labels.add(LAB);
+    List<String> en_labels = new ArrayList<String>();
+    en_labels.add("Funky label");
+    en_labels.add(LAB);
     JSONObject jo_label = new JSONObject();
-    jo_label.put(LANG, labels);
+    jo_label.put(EN_LANG, en_labels);
                 
     jo.put("label", jo_label);
 
     JSONObject jo_detail = new JSONObject();
-    labels = new ArrayList<String>();
-    labels.add(DET);
-    jo_detail.put(LANG, labels);
+    en_labels = new ArrayList<String>();
+    en_labels.add(DET);
+    jo_detail.put(EN_LANG, en_labels);
     jo.put("details", jo_detail);
     System.out.println("JO #1" + jo);
                 
@@ -58,24 +61,39 @@ public class FirstQueryTest {
     System.out.println("Foo "+r.getErrorString());
     
     String ID2 = Long.toString(System.currentTimeMillis());
-    labels = new ArrayList<String>();
-    labels.add(LAB2);
+    en_labels = new ArrayList<String>();
+    en_labels.add(LAB2);
     jo_label = new JSONObject();
-    jo_label.put(LANG, labels);
+    jo_label.put(EN_LANG, en_labels);
 
     jo = new JSONObject();
     jo.put("lox", ID2);
 		
     jo.put("label", jo_label);
-    jo_detail.remove(LANG);
+    jo_detail.remove(EN_LANG);
     jo.put("details", jo_detail);
     System.out.println("JO #2" + jo);
     r = provider.put(ID2, INDEX, jo);
 
+    String ID3 = Long.toString(System.currentTimeMillis());
+    List<String> fr_labels = new ArrayList<String>();
+    fr_labels.add(FR_LAB);
+    jo_label = new JSONObject();
+    jo_label.put(FR_LANG, fr_labels);
+    jo_label.put(EN_LANG, en_labels);
+
+    jo = new JSONObject();
+    jo.put("lox", ID3);
+		
+    jo.put("label", jo_label);
+    jo.put("details", jo_detail);
+    System.out.println("JO #3" + jo);
+    r = provider.put(ID3, INDEX, jo);
+
     System.out.println("--- calling refresh...");
     r = provider.refresh(INDEX);
     System.out.println("--- DONE calling refresh...");
-    
+
     textQueryUtil = environment.getTextQueryUtil();
     String [] indices = new String [1];
     indices[0]=INDEX;
@@ -95,9 +113,13 @@ public class FirstQueryTest {
     r = textQueryUtil.queryText(Q4, 0, 5, INDEX, indices, fields);
     System.out.println("DDD "+r.getErrorString()+" | "+r.getResultObject());
 
+    fields[0]="label.fr";
+    r = textQueryUtil.queryText(Q5, 0, 5, INDEX, indices, fields);
+    System.out.println("EEE "+r.getErrorString()+" | "+r.getResultObject());
+
     fields[0] = "lox";
     r = textQueryUtil.queryText(ID, 0, 5, INDEX, indices, fields);
-    System.out.println("EEE "+r.getErrorString()+" | "+r.getResultObject());
+    System.out.println("FFF "+r.getErrorString()+" | "+r.getResultObject());
 
     environment.shutDown();
   }
