@@ -113,7 +113,7 @@ public class ProviderClient implements IClient {
 			//request.settings(Settings.builder() 
 			JSONObject jo = new JSONObject();
 			JSONObject s = new JSONObject();
-			s.put("index.mapping.total_fields.limit", 2000);
+			//s.put("index.mapping.total_fields.limit", 2000);
 			s.put("index.number_of_shards", numShards);
 			s.put("index.number_of_replicas", numReplicas);
 			jo.put("settings", s);
