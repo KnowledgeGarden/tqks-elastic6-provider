@@ -62,9 +62,14 @@ public class ProviderClient implements IClient {
 	//https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-low-usage-initialization.html
 	private void setup() {
 		environment.logDebug("ProviderClient.setup-");
+		List<List<String>>clstr = (List<List<String>>)environment.getProperties().get("Clusters");
+		List<String>cx = clstr.get(0);
+		String name = cx.get(0);
+		String p = cx.get(1);
+		int port = Integer.parseInt(p);
 		client = new RestHighLevelClient(
 		        RestClient.builder(
-		                new HttpHost("localhost", 9200, "http")));
+		                new HttpHost(name, port, "http")));
 		environment.logDebug("ProviderClient.setup-1 "+client);
 		createIndex();
 		environment.logDebug("ProviderClient.setup+");
