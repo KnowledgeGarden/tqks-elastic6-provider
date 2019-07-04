@@ -304,7 +304,8 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 			while (itr.hasNext()) {
 				hit = itr.next();
 				json = hit.getSourceAsString();
-				vals.add(toJSONObject(json));
+				if (json != null)
+					vals.add(toJSONObject(json));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
