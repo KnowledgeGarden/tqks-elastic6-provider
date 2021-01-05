@@ -29,6 +29,8 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -94,7 +96,8 @@ public class ProviderClient implements IClient {
 			try {
 				mappy = getMappings(mappx);
 				try {
-					Response resp = client.getLowLevelClient().performRequest("GET", "/" + _INDEX, new HashMap<String, String>(), new BasicHeader("Accep", "application/json"));
+					Request req  = new Request("GET", "/" + _INDEX);
+					Response resp = client.getLowLevelClient().performRequest(req); //new Request("GET", "/" + _INDEX, new HashMap<String, String>(), new BasicHeader("Accep", "application/json")));
 					foundCode = resp.getStatusLine().getStatusCode();
 				} catch (Exception x) {
 					//seems to toss a bitch if the index is not found
@@ -111,6 +114,7 @@ public class ProviderClient implements IClient {
 		}
 	}
 	//https://www.elastic.co/guide/en/elasticsearch/client/java-rest/6.x/java-rest-high-put-mapping.html
+	//https://www.elastic.co/guide/en/elasticsearch/reference/7.x/indices-put-mapping.html
 	private void createMapping(JSONObject mapping, String index, int numShards, int numReplicas) {
 		try {
 			environment.logDebug("ProviderClient.createMapping- "+index+" "+numShards+" "+" "+numReplicas+" "+mapping);
@@ -123,8 +127,9 @@ public class ProviderClient implements IClient {
 			s.put("index.number_of_replicas", numReplicas);
 			jo.put("settings", s);
 			jo.put("mappings", mapping);
-			StringEntity entity = new StringEntity(jo.toJSONString(), ContentType.APPLICATION_JSON);
-			client.getLowLevelClient().performRequest("PUT", "/" + index, new HashMap<String, String>(), entity);
+			Request rq = new Request("PUT", "/" + index+"/_mapping");
+			rq.setJsonEntity(jo.toJSONString());
+			client.getLowLevelClient().performRequest(rq); //"PUT", "/" + index, new HashMap<String, String>(), entity);
 			environment.logDebug("ProviderClient.createMapping+");
 		} catch (Exception e) {
 			environment.logError(e.getMessage(), e);
@@ -143,13 +148,15 @@ public class ProviderClient implements IClient {
 	 * "https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-high-document-index.html"
 	 * @see org.topicquests.es.api.IClient#put(java.lang.String, java.lang.String, net.minidev.json.JSONObject)
 	 */
+	//https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-high-document-index.html
 	public IResult put(String id, String index, JSONObject node) {
 environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString());
 		IResult result = new ResultPojo();
 		try {
-			IndexRequest request = new IndexRequest(index, _TYPE, id);
+			IndexRequest request = new IndexRequest(index);
+			request.id(id);
 			request.source(node.toJSONString(), XContentType.JSON);
-			IndexResponse indexResponse = client.index(request);
+			IndexResponse indexResponse = client.index(request, RequestOptions.DEFAULT);
 			result.setResultObject(Integer.toString(indexResponse.status().getStatus()));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -167,7 +174,7 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
           try {
             UpdateRequest request = new UpdateRequest(index, _TYPE, id)
                 .doc(object.toJSONString(), XContentType.JSON);
-            UpdateResponse updateResponse = client.update(request);
+            UpdateResponse updateResponse = client.update(request, RequestOptions.DEFAULT);
             result.setResultObject(Integer.toString(updateResponse.status().getStatus()));
           } catch (Exception e) {
             e.printStackTrace();
@@ -180,12 +187,14 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#partialUpdateNode(java.lang.String, java.lang.String, net.minidev.json.JSONObject)
 	 */
+	//https://www.elastic.co/guide/en/elasticsearch/client/java-api/7.x/java-docs-update.html
 	public IResult partialUpdateNode(String id, String index, JSONObject object) {
           IResult result = new ResultPojo();
           try {
-            UpdateRequest request = new UpdateRequest(index, _TYPE, id)
+            UpdateRequest request = new UpdateRequest()
+            	.index(index)
                 .doc(object.toJSONString(), XContentType.JSON);
-            UpdateResponse updateResponse = client.update(request);
+            UpdateResponse updateResponse = client.update(request, RequestOptions.DEFAULT);
             result.setResultObject(Integer.toString(updateResponse.status().getStatus()));
           } catch (Exception e) {
             e.printStackTrace();
@@ -201,8 +210,8 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	public IResult remove(String id, String index) {
           IResult result = new ResultPojo();
           try {
-            DeleteRequest request = new DeleteRequest(index, _TYPE, id);
-            DeleteResponse response = client.delete(request);
+            DeleteRequest request = new DeleteRequest(index); //, _TYPE, id);
+            DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
             result.setResultObject(Integer.toString(response.status().getStatus()));
           } catch (Exception e) {
             e.printStackTrace();
@@ -218,8 +227,10 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	public IResult exists(String id, String index) {
           IResult result = new ResultPojo();
           try {
-            GetRequest request = new GetRequest(index, _TYPE, id);
-            GetResponse response = client.get(request);
+            GetRequest request = new GetRequest(index);
+            request.id(id);
+           
+            GetResponse response = client.get(request, RequestOptions.DEFAULT);
             result.setResultObject(Boolean.toString(response.isExists()));
           } catch (Exception e) {
             e.printStackTrace();
@@ -232,11 +243,12 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#get(java.lang.String, java.lang.String)
 	 */
+	//https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-high-document-get.html
 	public IResult get(String id, String index) {
 		IResult result = new ResultPojo();
 		try {
-			GetRequest greq = new GetRequest(index, _TYPE, id);
-			GetResponse gres = client.get(greq, new BasicHeader("Accep", "application/json"));
+			GetRequest greq = new GetRequest(index, id);
+			GetResponse gres = client.get(greq, RequestOptions.DEFAULT);// new BasicHeader("Accep", "application/json"));
 			
 			String json = gres.getSourceAsString();
                         if (json != null) {
@@ -267,7 +279,7 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	public IResult search(SearchRequest query, String index) {
           IResult result = new ResultPojo();
           try {
-            SearchResponse searchResponse = client.search(query);
+            SearchResponse searchResponse = client.search(query, RequestOptions.DEFAULT);
             SearchHits hits = searchResponse.getHits();
             Iterator<SearchHit> itr = hits.iterator();
             SearchHit hit;
@@ -294,7 +306,7 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	public IResult listSearch(SearchRequest query, String index) {
 		IResult result = new ResultPojo();
 		try {
-			SearchResponse searchResponse = client.search(query);
+			SearchResponse searchResponse = client.search(query, RequestOptions.DEFAULT);
 			SearchHits hits = searchResponse.getHits();
 			Iterator<SearchHit> itr = hits.iterator();
 			SearchHit hit;
@@ -341,13 +353,14 @@ environment.logDebug("ProviderClient.put "+id+" "+index+" "+node.toJSONString())
 	/* (non-Javadoc)
 	 * @see org.topicquests.es.api.IClient#refresh()
 	 */
+	//https://www.elastic.co/guide/en/elasticsearch/reference/7.x/indices-refresh.html
 	public IResult refresh(String index) {
           IResult result = new ResultPojo();
 
           try {
-            Response resp = client.getLowLevelClient().performRequest("POST", "/" + index + "/_refresh",
-                                                                      new HashMap<String, String>(),
-                                                                      new BasicHeader("Accep", "application/json"));
+			Request req  = new Request("POST", "/" + index + "/_refresh");
+
+            Response resp = client.getLowLevelClient().performRequest(req);
             int foundCode = resp.getStatusLine().getStatusCode();
             result.setResultObject(Integer.toString(foundCode));
           } catch (Exception e) {
