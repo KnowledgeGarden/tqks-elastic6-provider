@@ -34,6 +34,9 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -103,7 +106,8 @@ public class ProviderClient implements IClient {
 					//seems to toss a bitch if the index is not found
 					foundCode = 404;
 				}
-				
+				environment.logDebug("ProviderClient.createIndex-1 "+foundCode);
+			
 				if (foundCode == 404) {
 					createMapping(mappy, _INDEX, nS, nR);
 				}
@@ -118,19 +122,16 @@ public class ProviderClient implements IClient {
 	private void createMapping(JSONObject mapping, String index, int numShards, int numReplicas) {
 		try {
 			environment.logDebug("ProviderClient.createMapping- "+index+" "+numShards+" "+" "+numReplicas+" "+mapping);
-			//CreateIndexRequest request = new CreateIndexRequest(index);
-			//request.settings(Settings.builder() 
-			JSONObject jo = new JSONObject();
-			JSONObject s = new JSONObject();
-			//s.put("index.mapping.total_fields.limit", 2000);
-			s.put("index.number_of_shards", numShards);
-			s.put("index.number_of_replicas", numReplicas);
-			jo.put("settings", s);
-			jo.put("mappings", mapping);
-			Request rq = new Request("PUT", "/" + index+"/_mapping");
-			rq.setJsonEntity(jo.toJSONString());
-			client.getLowLevelClient().performRequest(rq); //"PUT", "/" + index, new HashMap<String, String>(), entity);
-			environment.logDebug("ProviderClient.createMapping+");
+			//https://www.elastic.co/guide/en/elasticsearch/client/java-rest/master/java-rest-high-create-index.html
+			CreateIndexRequest request = new CreateIndexRequest(index);
+			request.settings(Settings.builder() 
+					.put("index.number_of_shards", numShards)
+					.put("index.number_of_replicas", numReplicas)
+			);
+			request.mapping(mapping);
+			environment.logDebug("ProviderClient.createMapping-1 "+request.toString());
+			CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
+			environment.logDebug("ProviderClient.createMapping+ "+createIndexResponse.toString());
 		} catch (Exception e) {
 			environment.logError(e.getMessage(), e);
 			e.printStackTrace();			
